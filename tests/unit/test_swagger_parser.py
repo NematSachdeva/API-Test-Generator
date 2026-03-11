@@ -1,8 +1,4 @@
 import pytest
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src' / 'main'))
 
 from parser import SwaggerParser
 from test_generator import APITestGenerator

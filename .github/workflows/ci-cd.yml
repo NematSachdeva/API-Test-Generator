@@ -42,6 +42,7 @@ jobs:
           python -c "import yaml; print(f'PyYAML: {yaml.__version__}')"
           python -c "import requests; print(f'requests: {requests.__version__}')"
           python -c "import jsonschema; print(f'jsonschema: {jsonschema.__version__}')"
+          python -c "import selenium; print(f'selenium: {selenium.__version__}')"
       
       - name: Cache pip packages
         uses: actions/cache@v3
@@ -124,12 +125,14 @@ jobs:
       - name: Run pytest tests
         run: |
           echo "Running pytest tests..."
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src/main
           pytest tests/ -v --tb=short --color=yes
       
       - name: Run tests with coverage
         run: |
           echo "Running tests with coverage..."
           pip install pytest-cov
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src/main
           pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
       
       - name: Upload coverage reports

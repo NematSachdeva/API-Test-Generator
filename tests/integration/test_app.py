@@ -1,10 +1,6 @@
 import pytest
-import sys
 import json
-from pathlib import Path
 from io import BytesIO
-
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src' / 'main'))
 
 from app import app
 
