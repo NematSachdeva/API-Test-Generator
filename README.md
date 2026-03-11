@@ -1,117 +1,298 @@
-# API Test Generator
+# API Test Generator from OpenAPI / Swagger Specifications
 
-A comprehensive DevOps project that automatically generates pytest-based API test cases from OpenAPI/Swagger specifications. This tool streamlines API testing by parsing specification files and generating production-ready test code with minimal configuration.
+**Student Name:** Nemat Sachdeva  
+**Course:** CSE3253 DevOps  
+**Semester:** VI  
+**Project Type:** DevOps Automation Tool
 
-## Problem Statement
+---
 
-Manual API test creation is time-consuming and error-prone. Teams need a way to:
-- Quickly generate test cases from API specifications
-- Ensure consistent test coverage across endpoints
-- Reduce manual testing effort
-- Maintain tests as specifications evolve
+## 📋 Project Overview
 
-The API Test Generator solves this by automating test generation from OpenAPI/Swagger specs, enabling teams to focus on test logic rather than boilerplate code.
+The **API Test Generator** is a DevOps automation tool that automatically generates pytest-based API test cases from OpenAPI 3.0 or Swagger 2.0 specifications. This tool eliminates manual test creation, accelerates the QA process, and seamlessly integrates into CI/CD pipelines.
 
-## Technology Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Backend | Python 3.11 + Flask 3.0 |
-| Testing | pytest 7.4 |
-| API Parsing | PyYAML 6.0, jsonschema 4.20 |
-| HTTP Client | requests 2.31 |
-| Containerization | Docker + Docker Compose |
-| CI/CD | GitHub Actions |
-| Code Quality | flake8, black, isort, pylint |
-
-## Project Structure
+### Workflow
 
 ```
-api-test-generator/
-├── src/
-│   ├── main/
-│   │   ├── app.py                 # Flask REST API
-│   │   ├── parser.py              # OpenAPI/Swagger parser
-│   │   └── test_generator.py      # Test code generator
-│   ├── scripts/
-│   │   └── generate_tests.py      # CLI test generation script
-│   └── test/
-├── tests/
-│   ├── test_app.py                # API endpoint tests
-│   └── test_swagger_parser.py     # Parser unit tests
-├── infrastructure/
-│   └── docker/
-│       ├── Dockerfile             # Container image definition
-│       └── docker-compose.yml     # Multi-container orchestration
-├── docs/
-│   ├── api-documentation.md       # REST API reference
-│   ├── design-document.md         # Architecture & design
-│   ├── project-plan.md            # Project roadmap
-│   ├── user-guide.md              # Usage instructions
-│   └── architecture.md            # System architecture
-├── pipelines/
-│   └── ci-cd.yml                  # CI/CD pipeline config
-├── monitoring/
-│   ├── health-check.sh            # Health check script
-│   └── prometheus.yml             # Monitoring config
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml              # GitHub Actions workflow
-├── requirements.txt               # Python dependencies
-├── Makefile                       # Development commands
-└── .env.example                   # Environment variables template
+OpenAPI / Swagger File
+         ↓
+SwaggerParser extracts endpoints
+         ↓
+APITestGenerator creates pytest tests
+         ↓
+pytest executes API tests
+         ↓
+Automated validation & reporting
 ```
 
-## Installation
+### Benefits
+
+- ✅ **Automated API Testing** - Generate tests automatically from specifications
+- ✅ **Faster QA Process** - Reduce test creation time from hours to seconds
+- ✅ **DevOps Pipeline Integration** - Seamlessly integrate with CI/CD workflows
+- ✅ **Reduced Manual Effort** - Eliminate repetitive test writing tasks
+- ✅ **Consistent Test Coverage** - Ensure all endpoints are tested
+- ✅ **Specification-Driven** - Tests stay in sync with API documentation
+
+---
+
+## ✨ Features
+
+- 🔍 **Parse OpenAPI 3.0 and Swagger 2.0 specifications**
+- 🎯 **Extract API endpoints automatically** with methods, parameters, and responses
+- 🧪 **Generate production-ready pytest test cases** with status code validation
+- 🌐 **Web UI for uploading Swagger files** with drag-and-drop support
+- 🐳 **Docker containerized application** for consistent deployment
+- 🔄 **CI/CD pipeline using GitHub Actions** with 5-stage automation
+- 📊 **Monitoring configuration** using Prometheus, Nagios, and Grafana
+- ☸️ **Kubernetes deployment manifests** for production orchestration
+- 📝 **REST API endpoints** for programmatic test generation
+- 🎨 **Modern dark-themed UI** with responsive design
+
+---
+
+## 🏗️ Project Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    User / CI/CD Pipeline                     │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Web UI / REST API                          │
+│                    (Flask Backend)                           │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  SwaggerParser (Python)                      │
+│         • Parses OpenAPI 3.0 / Swagger 2.0                  │
+│         • Extracts endpoints, methods, parameters           │
+│         • Validates specification structure                 │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│               APITestGenerator (Python)                      │
+│         • Generates pytest test functions                   │
+│         • Creates status code assertions                    │
+│         • Adds endpoint logging                             │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  Generated pytest Tests                      │
+│         • test_get_endpoint_1()                             │
+│         • test_post_endpoint_2()                            │
+│         • test_put_endpoint_3()                             │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│              CI/CD Pipeline Execution                        │
+│         • Automated test execution                          │
+│         • Coverage reporting                                │
+│         • Docker image building                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Python 3.11** - Core programming language
+- **Flask 3.0** - Web framework for REST API
+- **PyYAML 6.0** - YAML parsing for Swagger files
+- **jsonschema 4.20** - JSON validation
+
+### Testing
+- **pytest 7.4** - Test framework
+- **requests 2.31** - HTTP client for API testing
+- **pytest-cov** - Code coverage reporting
+- **selenium 4.15** - UI automation testing
+
+### DevOps
+- **Docker** - Containerization
+- **Docker Compose** - Multi-container orchestration
+- **GitHub Actions** - CI/CD automation
+- **Kubernetes** - Container orchestration (manifests included)
+
+### Monitoring
+- **Prometheus** - Metrics collection and alerting
+- **Nagios** - System monitoring
+- **Grafana** - Visualization dashboards
+
+### Code Quality
+- **flake8** - Linting
+- **black** - Code formatting
+- **isort** - Import sorting
+- **pylint** - Static code analysis
+
+---
+
+## 📁 Repository Structure
+
+```
+API-TEST-GENERATOR/
+│
+├── src/main/                          # Application source code
+│   ├── app.py                         # Flask REST API server
+│   ├── parser.py                      # SwaggerParser class
+│   ├── test_generator.py              # APITestGenerator class
+│   ├── config/                        # Configuration files
+│   │   └── config.yaml                # Application settings
+│   └── static/                        # Frontend UI
+│       ├── index.html                 # Main UI page
+│       ├── style.css                  # Styles (dark theme)
+│       └── script.js                  # Frontend JavaScript
+│
+├── tests/                             # Test suite
+│   ├── unit/                          # Unit tests
+│   │   └── test_swagger_parser.py     # Parser tests
+│   ├── integration/                   # Integration tests
+│   │   └── test_app.py                # API endpoint tests
+│   └── selenium/                      # UI automation tests
+│       └── test_ui.py                 # Selenium tests
+│
+├── infrastructure/                    # Infrastructure as Code
+│   ├── docker/                        # Docker configuration
+│   │   ├── Dockerfile                 # Container image definition
+│   │   └── docker-compose.yml         # Service orchestration
+│   └── kubernetes/                    # Kubernetes manifests
+│       ├── deployment.yaml            # Deployment (3 replicas)
+│       ├── service.yaml               # LoadBalancer service
+│       ├── configmap.yaml             # Configuration
+│       └── ingress.yaml               # Ingress rules
+│
+├── monitoring/                        # Monitoring configuration
+│   ├── nagios/                        # Nagios config
+│   │   └── api-test-generator.cfg     # Service monitoring
+│   ├── alerts/                        # Prometheus alerts
+│   │   └── alert-rules.yaml           # Alert definitions
+│   ├── dashboards/                    # Grafana dashboards
+│   │   └── grafana-dashboard.json     # Visualization
+│   ├── health-check.sh                # Health check script
+│   └── prometheus.yml                 # Prometheus config
+│
+├── docs/                              # Project documentation
+│   ├── project-plan.md                # Project planning
+│   ├── design-document.md             # Technical design
+│   ├── user-guide.md                  # User documentation
+│   └── api-documentation.md           # API reference
+│
+├── .github/workflows/                 # CI/CD pipeline
+│   └── ci-cd.yml                      # GitHub Actions workflow
+│
+├── pytest.ini                         # Pytest configuration
+├── requirements.txt                   # Python dependencies
+├── Makefile                           # Build commands
+├── .gitignore                         # Git ignore patterns
+├── .dockerignore                      # Docker ignore patterns
+└── README.md                          # This file
+```
+
+---
+
+## 🚀 Installation and Setup
 
 ### Prerequisites
 
-- Python 3.11+
-- pip or conda
-- Docker & Docker Compose (optional, for containerized deployment)
+- Python 3.11 or higher
+- pip (Python package manager)
 - Git
+- Docker (optional, for containerized deployment)
 
 ### Local Setup
 
-1. Clone the repository:
+#### 1. Clone Repository
+
 ```bash
-git clone <repository-url>
-cd api-test-generator
+git clone https://github.com/NematSachdeva/API-Test-Generator.git
+cd API-Test-Generator
 ```
 
-2. Create a virtual environment:
+#### 2. Create Virtual Environment (Recommended)
+
 ```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
 ```
 
-3. Install dependencies:
+#### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Run the application:
+#### 4. Run Application
+
 ```bash
 python src/main/app.py
 ```
 
-The API will be available at `http://localhost:8080`
+#### 5. Access Application
 
-### Verify Installation
+Open your browser and navigate to:
+- **Web UI**: http://localhost:8080/ui
+- **API Docs**: http://localhost:8080/
+- **Health Check**: http://localhost:8080/health
+
+---
+
+## 🐳 Running with Docker
+
+### Using Makefile (Recommended)
 
 ```bash
-# Check health endpoint
-curl http://localhost:8080/health
+# Build Docker image
+make docker-build
 
-# Expected response:
-# {"status": "healthy", "service": "API Test Generator"}
+# Run container
+make docker-run
+
+# Access UI
+# Open http://localhost:8080/ui in your browser
+
+# View logs
+make docker-logs
+
+# Stop container
+make docker-stop
+
+# Clean up
+make docker-clean
 ```
 
-## Docker Usage
+### Using Docker Commands
 
-### Quick Start with Docker Compose
+```bash
+# Build Docker image
+docker build -f infrastructure/docker/Dockerfile -t api-test-generator:latest .
 
-The easiest way to run the entire stack:
+# Run container
+docker run -d -p 8080:8080 --name api-test-generator api-test-generator:latest
+
+# Access UI
+# Open http://localhost:8080/ui
+
+# View logs
+docker logs -f api-test-generator
+
+# Stop and remove container
+docker stop api-test-generator
+docker rm api-test-generator
+```
+
+### Using Docker Compose
 
 ```bash
 # Start all services
@@ -124,204 +305,49 @@ docker-compose -f infrastructure/docker/docker-compose.yml logs -f
 docker-compose -f infrastructure/docker/docker-compose.yml down
 ```
 
-### Using Makefile Commands
+---
 
-```bash
-# Build Docker image
-make docker-build
+## 📝 Generating API Tests
 
-# Run container
-make docker-run
+### Using Web UI
 
-# Stop container
-make docker-stop
+1. **Open the UI**
+   - Navigate to http://localhost:8080/ui
 
-# View logs
-make docker-logs
+2. **Upload Swagger/OpenAPI File**
+   - Drag and drop your `.json` or `.yaml` file
+   - Or click "browse" to select a file
 
-# Clean up
-make docker-clean
-```
+3. **Click "Generate Tests"**
+   - Wait for processing (usually < 1 second)
 
-### Manual Docker Commands
+4. **Download Generated Tests**
+   - Click "Download" button
+   - Or click "Copy" to copy to clipboard
+   - Save as `generated_tests.py`
 
-```bash
-# Build image
-docker build -t api-test-generator:latest -f infrastructure/docker/Dockerfile .
+### Using REST API
 
-# Run container with port mapping
-docker run -d \
-  --name api-test-generator \
-  -p 8080:8080 \
-  -e FLASK_ENV=production \
-  -v $(pwd)/generated_tests:/app/generated_tests \
-  api-test-generator:latest
+#### Generate Tests from File
 
-# Access the API
-curl http://localhost:8080/health
-
-# Stop container
-docker stop api-test-generator
-docker rm api-test-generator
-```
-
-### Docker Configuration
-
-The Docker setup includes:
-- **Non-root user** for security
-- **Health checks** for container monitoring
-- **Volume mounts** for persistent test generation
-- **Environment variables** for configuration
-- **Logging** for debugging and monitoring
-
-See `infrastructure/docker/Dockerfile` and `infrastructure/docker/docker-compose.yml` for detailed configuration.
-
-## API Endpoints
-
-### Health Check
-```
-GET /health
-```
-Returns service health status.
-
-### Generate Tests
-```
-POST /generate-tests
-```
-Generates pytest test code from OpenAPI/Swagger specification.
-
-**Request (File Upload):**
 ```bash
 curl -X POST \
   -F "file=@swagger.json" \
-  http://localhost:8080/generate-tests
+  http://localhost:8080/generate-tests \
+  | jq -r '.test_code' > generated_tests.py
 ```
 
-**Request (JSON Body):**
+#### Generate Tests from JSON Body
+
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
   -d @swagger.json \
-  http://localhost:8080/generate-tests
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "test_code": "import pytest\nimport requests\n...",
-  "endpoints_count": 5
-}
-```
-
-### Parse Specification
-```
-POST /parse
-```
-Parses OpenAPI/Swagger spec and returns extracted endpoints.
-
-**Response:**
-```json
-{
-  "status": "success",
-  "endpoints": [
-    {"method": "GET", "path": "/api/users"},
-    {"method": "POST", "path": "/api/users"}
-  ],
-  "count": 2
-}
-```
-
-## CI/CD Pipeline
-
-The GitHub Actions CI/CD pipeline automates testing, linting, and deployment:
-
-### Pipeline Stages
-
-1. **Install Dependencies** (Stage 1)
-   - Sets up Python 3.11 environment
-   - Installs all dependencies from requirements.txt
-   - Caches pip packages for faster builds
-   - Verifies all packages are installed correctly
-
-2. **Lint Checks** (Stage 2)
-   - Runs flake8 for code style validation
-   - Checks code formatting with black
-   - Validates import sorting with isort
-   - Runs pylint for code quality analysis
-
-3. **Run Tests** (Stage 3)
-   - Executes pytest test suite
-   - Generates coverage reports
-   - Uploads coverage to Codecov
-   - Validates test results
-
-4. **Build Docker Image** (Stage 4)
-   - Sets up Docker Buildx for multi-platform builds
-   - Builds Docker image with caching
-   - Extracts metadata for tagging
-   - Validates image build success
-
-5. **Push Docker Artifact** (Stage 5)
-   - Pushes image to GitHub Container Registry
-   - Only runs on main/develop branches
-   - Tags with branch, version, and SHA
-   - Logs in with GitHub token
-
-### Pipeline Triggers
-
-- Push to `main` or `develop` branches
-- Pull requests to `main` or `develop` branches
-- Manual workflow dispatch
-
-### Viewing Pipeline Status
-
-1. Go to GitHub repository
-2. Click "Actions" tab
-3. Select workflow run to view details
-4. Check individual job logs for debugging
-
-### Local Testing Before Push
-
-```bash
-# Run linting
-flake8 src/ tests/ --max-line-length=120
-
-# Check formatting
-black --check src/ tests/
-
-# Run tests
-pytest tests/ -v --cov=src
-
-# Build Docker image locally
-docker build -t api-test-generator:test -f infrastructure/docker/Dockerfile .
-```
-
-## Usage Examples
-
-### Generate Tests from Swagger File
-
-```bash
-# Using curl with file upload
-curl -X POST \
-  -F "file=@path/to/swagger.json" \
   http://localhost:8080/generate-tests \
-  > generated_tests.py
-
-# Using Python requests
-import requests
-
-with open('swagger.json', 'rb') as f:
-    files = {'file': f}
-    response = requests.post(
-        'http://localhost:8080/generate-tests',
-        files=files
-    )
-    
-print(response.json()['test_code'])
+  | jq -r '.test_code' > generated_tests.py
 ```
 
-### Parse Endpoints from Specification
+#### Parse Endpoints Only
 
 ```bash
 curl -X POST \
@@ -330,73 +356,255 @@ curl -X POST \
   http://localhost:8080/parse
 ```
 
-### Run Generated Tests
+---
+
+## 🧪 Running Generated Tests
+
+### Install pytest and requests
 
 ```bash
-# Generate tests
-curl -X POST -F "file=@swagger.json" \
-  http://localhost:8080/generate-tests \
-  | jq -r '.test_code' > my_tests.py
-
-# Run with pytest
-pytest my_tests.py -v
+pip install pytest requests
 ```
 
-## Development
-
-### Running Tests Locally
+### Run Tests
 
 ```bash
-# Install test dependencies
-pip install -r requirements.txt
+# Run all tests
+pytest generated_tests.py
+
+# Run with verbose output
+pytest generated_tests.py -v
+
+# Run with detailed output
+pytest generated_tests.py -vv
+```
+
+### Example Output
+
+```
+generated_tests.py::test_get_users_1 PASSED                    [ 33%]
+generated_tests.py::test_post_users_2 PASSED                   [ 66%]
+generated_tests.py::test_get_users_id_3 PASSED                 [100%]
+
+========================= 3 passed in 0.45s =========================
+```
+
+### What the Tests Validate
+
+The generated tests automatically:
+- ✅ Send HTTP requests to each endpoint
+- ✅ Validate response status codes (200, 201, 404, etc.)
+- ✅ Print endpoint names for debugging
+- ✅ Use the requests library for HTTP calls
+- ✅ Follow pytest conventions and best practices
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The project includes a comprehensive GitHub Actions CI/CD pipeline that runs automatically on every push and pull request.
+
+### Pipeline Stages
+
+#### 1️⃣ Install Dependencies
+- Sets up Python 3.11 environment
+- Installs all packages from `requirements.txt`
+- Caches pip packages for faster builds
+- Verifies installations (Flask, pytest, PyYAML, requests, selenium)
+
+#### 2️⃣ Lint Checks
+- **flake8** - Code style validation
+- **black** - Code formatting check
+- **isort** - Import sorting validation
+- **pylint** - Static code analysis
+
+#### 3️⃣ Run Tests
+- Executes pytest test suite (unit + integration)
+- Sets PYTHONPATH for module imports
+- Generates code coverage reports
+- Uploads coverage to Codecov
+- **Result**: 13 tests pass, 3 skipped (Selenium in CI)
+
+#### 4️⃣ Build Docker Image
+- Sets up Docker Buildx
+- Builds container image with caching
+- Extracts metadata for tagging
+- Validates successful build
+
+#### 5️⃣ Push Docker Artifact
+- Pushes image to GitHub Container Registry
+- Only runs on `main` and `develop` branches
+- Tags with branch name, version, and commit SHA
+- Authenticates with GitHub token
+
+### Pipeline Triggers
+
+The pipeline runs automatically on:
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
+- Manual workflow dispatch
+
+### Viewing Pipeline Status
+
+1. Go to: https://github.com/NematSachdeva/API-Test-Generator
+2. Click the **"Actions"** tab
+3. View workflow runs and their status
+4. Click on a run to see detailed logs
+
+### Local Testing Before Push
+
+```bash
+# Run tests locally
+./run_tests.sh all
+
+# Run linting
+flake8 src/ tests/ --max-line-length=120
+
+# Check formatting
+black --check src/ tests/
+
+# Run tests with coverage
+pytest tests/ --cov=src/main --cov-report=html
+```
+
+---
+
+## 📊 Monitoring
+
+The project includes comprehensive monitoring configuration for production deployments.
+
+### Prometheus for Metrics
+
+- **Location**: `monitoring/prometheus.yml`
+- **Purpose**: Collects application metrics
+- **Metrics**:
+  - Request rate
+  - Response time
+  - Error rate
+  - CPU and memory usage
+
+### Nagios for System Monitoring
+
+- **Location**: `monitoring/nagios/api-test-generator.cfg`
+- **Purpose**: System health monitoring
+- **Checks**:
+  - HTTP health endpoint
+  - API response time
+  - Container status
+  - Service availability
+
+### Grafana Dashboards for Visualization
+
+- **Location**: `monitoring/dashboards/grafana-dashboard.json`
+- **Purpose**: Visual monitoring dashboards
+- **Panels**:
+  - Service uptime
+  - Request rate graph
+  - Response time graph
+  - Error rate graph
+  - Memory usage
+  - CPU usage
+
+### Alert Rules
+
+- **Location**: `monitoring/alerts/alert-rules.yaml`
+- **Alerts**:
+  - Service down (critical)
+  - High response time (warning)
+  - High error rate (warning)
+  - High memory usage (warning)
+  - High CPU usage (warning)
+  - Container restarting (warning)
+
+---
+
+## 🚀 Future Improvements
+
+### Planned Enhancements
+
+1. **Smarter Request Payload Generation**
+   - Automatically generate request bodies from schema
+   - Support for complex nested objects
+   - Faker integration for realistic test data
+
+2. **Dynamic Parameter Handling**
+   - Auto-generate path parameters
+   - Query parameter combinations
+   - Header and cookie handling
+
+3. **Response Schema Validation**
+   - Validate response structure against OpenAPI schema
+   - Check data types and required fields
+   - Validate response examples
+
+4. **Automatic API Mocking**
+   - Generate mock servers from specifications
+   - Support for contract testing
+   - Integration with Postman/Insomnia
+
+5. **Full Selenium UI Automation**
+   - Complete UI test coverage
+   - Cross-browser testing
+   - Visual regression testing
+
+6. **Advanced Features**
+   - Authentication token management
+   - Rate limiting tests
+   - Performance testing integration
+   - GraphQL support
+   - gRPC support
+
+---
+
+## 📚 Documentation
+
+For detailed information, refer to:
+
+- **[Project Plan](docs/project-plan.md)** - Project roadmap and timeline
+- **[Design Document](docs/design-document.md)** - Architecture and design patterns
+- **[User Guide](docs/user-guide.md)** - Step-by-step usage instructions
+- **[API Documentation](docs/api-documentation.md)** - Complete REST API reference
+
+---
+
+## 🧪 Running Tests Locally
+
+### Using Test Runner Script
+
+```bash
+# Run all tests
+./run_tests.sh all
+
+# Run unit tests only
+./run_tests.sh unit
+
+# Run integration tests only
+./run_tests.sh integration
+
+# Run with coverage report
+./run_tests.sh coverage
+```
+
+### Using pytest Directly
+
+```bash
+# Set PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$(pwd)/src/main
 
 # Run all tests
 pytest tests/ -v
 
+# Run specific test suite
+pytest tests/unit/ -v
+pytest tests/integration/ -v
+
 # Run with coverage
-pytest tests/ -v --cov=src --cov-report=html
-
-# Run specific test file
-pytest tests/test_app.py -v
-
-# Run specific test
-pytest tests/test_app.py::test_health_check -v
+pytest tests/ --cov=src/main --cov-report=html
 ```
 
-### Code Quality Checks
+---
 
-```bash
-# Format code with black
-black src/ tests/
-
-# Sort imports with isort
-isort src/ tests/
-
-# Check with flake8
-flake8 src/ tests/ --max-line-length=120
-
-# Run pylint
-pylint src/main/*.py
-```
-
-### Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```bash
-# Flask configuration
-FLASK_ENV=development
-PORT=8080
-HOST=0.0.0.0
-
-# Upload configuration
-UPLOAD_FOLDER=/tmp
-
-# Docker configuration
-DOCKER_REGISTRY=ghcr.io
-```
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Port Already in Use
 
@@ -404,84 +612,85 @@ DOCKER_REGISTRY=ghcr.io
 # Find process using port 8080
 lsof -i :8080
 
-# Kill process
+# Kill the process
 kill -9 <PID>
 ```
 
-### Docker Build Fails
+### Module Import Errors
+
+```bash
+# Set PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$(pwd)/src/main
+
+# Or run with the test script
+./run_tests.sh all
+```
+
+### Docker Issues
 
 ```bash
 # Clean Docker cache
 docker system prune -a
 
 # Rebuild without cache
-docker build --no-cache -t api-test-generator:latest .
+docker build --no-cache -f infrastructure/docker/Dockerfile -t api-test-generator:latest .
 ```
 
-### Tests Failing
+---
 
-```bash
-# Run tests with verbose output
-pytest tests/ -vv --tb=long
-
-# Run specific test with debugging
-pytest tests/test_app.py::test_generate_tests -vv -s
-```
-
-### Import Errors
-
-```bash
-# Verify virtual environment is activated
-which python
-
-# Reinstall dependencies
-pip install --force-reinstall -r requirements.txt
-```
-
-## Documentation
-
-For detailed information, see:
-
-- **[API Documentation](docs/api-documentation.md)** - Complete REST API reference
-- **[User Guide](docs/user-guide.md)** - Step-by-step usage instructions
-- **[Design Document](docs/design-document.md)** - Architecture and design patterns
-- **[Project Plan](docs/project-plan.md)** - Project roadmap and timeline
-- **[Architecture](docs/architecture.md)** - System architecture overview
-
-## Contributing
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Make changes and commit: `git commit -am 'Add feature'`
-3. Push to branch: `git push origin feature/your-feature`
-4. Submit a pull request
-
-All pull requests must:
-- Pass linting checks
-- Include tests for new functionality
-- Update documentation as needed
-- Pass CI/CD pipeline
-
-## License
-
-This project is licensed under the MIT License - see LICENSE file for details.
-
-## Support
+## 📞 Support
 
 For issues, questions, or suggestions:
-1. Check existing documentation in `docs/`
-2. Review troubleshooting section above
-3. Open an issue on GitHub
-4. Contact the development team
 
-## Quick Reference
+1. Check the [documentation](docs/)
+2. Review the [troubleshooting](#-troubleshooting) section
+3. Open an issue on [GitHub](https://github.com/NematSachdeva/API-Test-Generator/issues)
+
+---
+
+## 📄 License
+
+This project is created for educational purposes as part of the CSE3253 DevOps course.
+
+---
+
+## 🎓 Academic Information
+
+**Project**: API Test Generator from OpenAPI/Swagger Specifications  
+**Student**: Nemat Sachdeva  
+**Course**: CSE3253 DevOps  
+**Semester**: VI  
+**Institution**: [Your University Name]  
+**Year**: 2026
+
+---
+
+## 🙏 Acknowledgments
+
+- OpenAPI Initiative for specification standards
+- Flask community for the web framework
+- pytest community for the testing framework
+- Docker for containerization technology
+- GitHub for CI/CD infrastructure
+
+---
+
+## 📊 Quick Reference
 
 | Task | Command |
 |------|---------|
 | Install dependencies | `pip install -r requirements.txt` |
-| Run app locally | `python src/main/app.py` |
-| Run tests | `pytest tests/ -v` |
-| Run with Docker | `docker-compose -f infrastructure/docker/docker-compose.yml up` |
+| Run application | `python src/main/app.py` |
+| Access UI | http://localhost:8080/ui |
+| Run tests | `./run_tests.sh all` |
+| Build Docker image | `make docker-build` |
+| Run Docker container | `make docker-run` |
+| View logs | `make docker-logs` |
+| Stop container | `make docker-stop` |
+| Run linting | `flake8 src/ tests/` |
 | Format code | `black src/ tests/` |
-| Check linting | `flake8 src/ tests/` |
-| Generate coverage | `pytest tests/ --cov=src --cov-report=html` |
-| View API docs | Open `docs/api-documentation.md` |
+| Generate coverage | `pytest tests/ --cov=src/main` |
+
+---
+
+**Made with ❤️ for DevOps Automation**
