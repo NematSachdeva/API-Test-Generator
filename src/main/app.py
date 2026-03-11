@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import json
 import yaml
@@ -7,6 +8,16 @@ from parser import SwaggerParser
 from test_generator import APITestGenerator
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
+
+# Enable CORS for all routes to allow Vercel frontend to call Railway backend
+CORS(app, resources={
+    r"/*": {
+        "origins": ["*"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', '/tmp')
 ALLOWED_EXTENSIONS = {'json', 'yaml', 'yml'}

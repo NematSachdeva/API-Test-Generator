@@ -1,7 +1,11 @@
 /**
  * API Test Generator - Frontend JavaScript
  * Handles file upload, API communication, and UI interactions
+ * Deployed on Vercel, calls Railway backend API
  */
+
+// API Configuration
+const API_BASE = "https://api-test-generator-production.up.railway.app";
 
 // DOM Elements
 const uploadArea = document.getElementById('uploadArea');
@@ -141,19 +145,34 @@ async function generateTests() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        // Send request
-        const response = await fetch('/generate-tests', {
+        // Send request to Railway backend
+        const response = await fetch(`${API_BASE}/generate-tests`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
         });
 
         // Handle response
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to generate tests');
+            let errorMessage = 'Failed to generate tests';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON, use status text
+                errorMessage = `Server error: ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
+
+        // Validate response
+        if (!data.test_code) {
+            throw new Error('No test code generated. Please check your Swagger/OpenAPI file.');
+        }
 
         // Display results
         displayResults(data);
@@ -161,7 +180,16 @@ async function generateTests() {
 
     } catch (error) {
         console.error('Error:', error);
-        showStatus(`Error: ${error.message}`, 'error');
+        
+        // Provide specific error messages
+        let userMessage = error.message;
+        if (error.message.includes('Failed to fetch')) {
+            userMessage = 'Cannot connect to backend. Please check your internet connection or try again later.';
+        } else if (error.message.includes('CORS')) {
+            userMessage = 'CORS error: Backend is not allowing requests from this domain.';
+        }
+        
+        showStatus(`Error: ${userMessage}`, 'error');
     } finally {
         // Hide loading state
         generateBtn.disabled = false;
@@ -283,6 +311,7 @@ function hideStatus() {
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     console.log('API Test Generator frontend initialized');
+    console.log(`Backend API: ${API_BASE}`);
 });
 
 /**
