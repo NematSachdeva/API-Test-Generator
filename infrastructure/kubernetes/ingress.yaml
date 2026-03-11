@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-test-generator-ingress
+  labels:
+    app: api-test-generator
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api-test-generator.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-test-generator
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - api-test-generator.example.com
+    secretName: api-test-generator-tls

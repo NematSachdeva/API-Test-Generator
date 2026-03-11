@@ -1,0 +1,59 @@
+# Prometheus Alert Rules for API Test Generator
+
+groups:
+  - name: api_test_generator_alerts
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="api-test-generator"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API Test Generator service is down"
+          description: "The API Test Generator service has been down for more than 2 minutes."
+
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{job="api-test-generator"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "API response time is above 5 seconds for more than 5 minutes."
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="api-test-generator",status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for the last 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{container="api-test-generator"} / container_spec_memory_limit_bytes{container="api-test-generator"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 90% for more than 5 minutes."
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{container="api-test-generator"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% for more than 10 minutes."
+
+      - alert: ContainerRestarting
+        expr: rate(kube_pod_container_status_restarts_total{container="api-test-generator"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container is restarting"
+          description: "Container has restarted {{ $value }} times in the last 15 minutes."

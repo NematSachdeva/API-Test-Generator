@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>API Test Generator</title>
+    <link rel="stylesheet" href="/static/style.css?v=4.0">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <h1 class="logo">API Test Generator v4.0</h1>
+                <p class="tagline">Generate pytest tests from OpenAPI/Swagger specs</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="content-wrapper">
+                <!-- Upload Section -->
+                <section class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="upload-text">Drag and drop your file here</p>
+                        <p class="upload-hint">or click to browse</p>
+                        <p class="upload-formats">JSON, YAML (.json, .yaml, .yml)</p>
+                        <input type="file" id="fileInput" accept=".json,.yaml,.yml" hidden>
+                    </div>
+
+                    <div id="fileInfo" class="file-info" style="display: none;">
+                        <div class="file-info-content">
+                            <span class="file-name" id="fileName"></span>
+                            <button type="button" id="clearFileBtn" class="btn-clear">✕</button>
+                        </div>
+                    </div>
+
+                    <button id="generateBtn" class="btn-generate" disabled>
+                        <span class="btn-text">Generate Tests</span>
+                        <span class="btn-spinner" id="spinner" style="display: none;">
+                            <svg class="spinner" viewBox="0 0 50 50">
+                                <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                            </svg>
+                        </span>
+                    </button>
+                </section>
+
+                <!-- Status Messages -->
+                <div id="statusMessage" class="status-message" style="display: none;"></div>
+
+                <!-- Results Section -->
+                <section id="resultsSection" class="results-section" style="display: none;">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <h2>Generated Tests</h2>
+                            <span class="endpoint-badge" id="endpointCount">0</span>
+                        </div>
+                        <div class="results-actions">
+                            <button id="copyBtn" class="btn-action" title="Copy to clipboard">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                                Copy
+                            </button>
+                            <button id="downloadBtn" class="btn-action" title="Download as file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="code-container">
+                        <pre><code id="codeOutput" class="code-block"></code></pre>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>API Test Generator • <a href="/" target="_blank">API Docs</a></p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js?v=4.0"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# API Test Generator Configuration
+
+app:
+  name: "API Test Generator"
+  version: "1.0.0"
+  environment: "production"
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  debug: false
+
+upload:
+  max_file_size: 16777216  # 16MB in bytes
+  allowed_extensions:
+    - json
+    - yaml
+    - yml
+  temp_folder: "/tmp"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/app.log"
+
+test_generation:
+  default_base_url: "http://localhost:8080"
+  include_status_validation: true
+  include_endpoint_logging: true
+  test_framework: "pytest"
+
+security:
+  enable_cors: false
+  allowed_origins: []
+  rate_limiting:
+    enabled: false
+    requests_per_minute: 60
+
+monitoring:
+  health_check_interval: 30
+  metrics_enabled: true
+  prometheus_port: 9090

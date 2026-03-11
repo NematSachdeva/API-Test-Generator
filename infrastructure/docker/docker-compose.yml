@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  api-test-generator:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    container_name: api-test-generator
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=src/main/app.py
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./generated_tests:/app/generated_tests
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - api-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  api-network:
+    driver: bridge
+
+volumes:
+  generated_tests:
+  uploads:

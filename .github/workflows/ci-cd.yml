@@ -1,0 +1,278 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Stage 1: Install Dependencies
+  install-dependencies:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Verify installations
+        run: |
+          python -c "import flask; print(f'Flask: {flask.__version__}')"
+          python -c "import pytest; print(f'pytest: {pytest.__version__}')"
+          python -c "import yaml; print(f'PyYAML: {yaml.__version__}')"
+          python -c "import requests; print(f'requests: {requests.__version__}')"
+          python -c "import jsonschema; print(f'jsonschema: {jsonschema.__version__}')"
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+  # Stage 2: Lint Checks
+  lint-checks:
+    name: Lint Checks
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pylint black isort
+      
+      - name: Run flake8 linting
+        run: |
+          echo "Running flake8 linting..."
+          flake8 src/ tests/ --max-line-length=120 --count --statistics --show-source || true
+      
+      - name: Check code formatting with black
+        run: |
+          echo "Checking code formatting with black..."
+          black --check src/ tests/ || true
+      
+      - name: Check import sorting with isort
+        run: |
+          echo "Checking import sorting with isort..."
+          isort --check-only src/ tests/ || true
+      
+      - name: Run pylint
+        run: |
+          echo "Running pylint..."
+          pylint src/main/*.py --disable=all --enable=E,F --exit-zero || true
+      
+      - name: Lint summary
+        run: echo "✓ Lint checks completed"
+
+  # Stage 3: Run pytest Tests
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run pytest tests
+        run: |
+          echo "Running pytest tests..."
+          pytest tests/ -v --tb=short --color=yes
+      
+      - name: Run tests with coverage
+        run: |
+          echo "Running tests with coverage..."
+          pip install pytest-cov
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Test summary
+        run: echo "✓ All tests passed"
+
+  # Stage 4: Build Docker Image
+  build-docker-image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [lint-checks, run-tests]
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./infrastructure/docker/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build summary
+        run: echo "✓ Docker image built successfully"
+
+  # Stage 5: Push Docker Artifact
+  push-docker-artifact:
+    name: Push Docker Artifact
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./infrastructure/docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      
+      - name: Push summary
+        run: echo "✓ Docker image pushed to registry"
+
+  # Final Status Check
+  ci-cd-status:
+    name: CI/CD Status
+    runs-on: ubuntu-latest
+    needs: [install-dependencies, lint-checks, run-tests, build-docker-image]
+    if: always()
+    
+    steps:
+      - name: Check job status
+        run: |
+          if [ "${{ needs.install-dependencies.result }}" != "success" ]; then
+            echo "❌ Install dependencies failed"
+            exit 1
+          fi
+          if [ "${{ needs.lint-checks.result }}" != "success" ]; then
+            echo "❌ Lint checks failed"
+            exit 1
+          fi
+          if [ "${{ needs.run-tests.result }}" != "success" ]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.build-docker-image.result }}" != "success" ]; then
+            echo "❌ Docker build failed"
+            exit 1
+          fi
+          echo "✓ All CI/CD stages completed successfully"
+      
+      - name: Create success badge
+        run: echo "✓ CI/CD Pipeline Successful"

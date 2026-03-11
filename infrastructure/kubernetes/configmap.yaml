@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-test-generator-config
+  labels:
+    app: api-test-generator
+data:
+  FLASK_ENV: "production"
+  PORT: "8080"
+  HOST: "0.0.0.0"
+  MAX_CONTENT_LENGTH: "16777216"
+  UPLOAD_FOLDER: "/tmp"
