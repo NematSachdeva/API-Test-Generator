@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: JSONPlaceholder API
+  version: "1.0.0"
+  description: Public demo API
+
+servers:
+  - url: https://jsonplaceholder.typicode.com
+
+paths:
+  /users:
+    get:
+      summary: Get all users
+      responses:
+        "200":
+          description: Successful response
+
+  /posts:
+    get:
+      summary: Get all posts
+      responses:
+        "200":
+          description: Successful response
+
+  /posts/{id}:
+    get:
+      summary: Get post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response

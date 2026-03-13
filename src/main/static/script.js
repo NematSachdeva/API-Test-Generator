@@ -22,14 +22,26 @@ const endpointCount = document.getElementById('endpointCount');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const runTestsBtn = document.getElementById('runTestsBtn');
+const runTestsSpinner = document.getElementById('runTestsSpinner');
 const viewCodeBtn = document.getElementById('viewCodeBtn');
 const endpointsTable = document.getElementById('endpointsTable');
 const endpointsTableBody = document.getElementById('endpointsTableBody');
+const testSummaryCard = document.getElementById('testSummaryCard');
+const testResultsList = document.getElementById('testResultsList');
+const testResultsItems = document.getElementById('testResultsItems');
+const environmentInfo = document.getElementById('environmentInfo');
+const consoleOutputSection = document.getElementById('consoleOutputSection');
+const toggleConsoleBtn = document.getElementById('toggleConsoleBtn');
+const consoleOutput = document.getElementById('consoleOutput');
+const consoleOutputText = document.getElementById('consoleOutputText');
+const lineNumbers = document.getElementById('lineNumbers');
+const codeHeaderLabel = document.getElementById('codeHeaderLabel');
 
 // State
 let selectedFile = null;
 let generatedTestCode = null;
 let testResults = null;
+let testStartTime = null;
 
 /**
  * Initialize event listeners
@@ -61,6 +73,9 @@ function initializeEventListeners() {
 
     // View Code button
     viewCodeBtn.addEventListener('click', viewGeneratedCode);
+
+    // Toggle Console button
+    toggleConsoleBtn.addEventListener('click', toggleConsoleOutput);
 }
 
 /**
@@ -136,6 +151,10 @@ function clearFile() {
     generateBtn.disabled = true;
     resultsSection.style.display = 'none';
     viewCodeBtn.style.display = 'none';
+    testSummaryCard.style.display = 'none';
+    testResultsList.style.display = 'none';
+    environmentInfo.style.display = 'none';
+    consoleOutputSection.style.display = 'none';
     testResults = null;
     hideStatus();
 }
@@ -233,8 +252,11 @@ function displayResults(data) {
     // Store generated code
     generatedTestCode = data.test_code;
 
-    // Update code output
-    codeOutput.textContent = data.test_code;
+    // Update code output with syntax highlighting
+    displayCodeWithHighlighting(data.test_code);
+
+    // Update code header label
+    codeHeaderLabel.textContent = 'Generated Test Code';
 
     // Update endpoint count
     const count = data.endpoints_count || 0;
@@ -242,6 +264,12 @@ function displayResults(data) {
 
     // Try to extract and display endpoints table
     displayEndpointsTable(data.test_code, count);
+
+    // Hide test results components
+    testSummaryCard.style.display = 'none';
+    testResultsList.style.display = 'none';
+    environmentInfo.style.display = 'none';
+    consoleOutputSection.style.display = 'none';
 
     // Show results section
     resultsSection.style.display = 'block';
@@ -412,7 +440,14 @@ async function runTests() {
     try {
         // Show loading state
         runTestsBtn.disabled = true;
+        runTestsSpinner.style.display = 'inline-flex';
+        const btnLabel = runTestsBtn.querySelector('.btn-label');
+        if (btnLabel) btnLabel.textContent = 'Running...';
+        
         showStatus('🚀 Running tests...', 'info');
+
+        // Record start time
+        testStartTime = Date.now();
 
         // Send request to backend
         const response = await fetch(`${API_BASE}/run-tests`, {
@@ -440,6 +475,10 @@ async function runTests() {
 
         const data = await response.json();
 
+        // Calculate execution time
+        const executionTime = ((Date.now() - testStartTime) / 1000).toFixed(2);
+        data.executionTime = executionTime;
+
         // Display results
         displayTestResults(data);
 
@@ -464,6 +503,9 @@ async function runTests() {
     } finally {
         // Re-enable button
         runTestsBtn.disabled = false;
+        runTestsSpinner.style.display = 'none';
+        const btnLabel = runTestsBtn.querySelector('.btn-label');
+        if (btnLabel) btnLabel.textContent = 'Run Tests';
     }
 }
 
@@ -479,18 +521,36 @@ function displayTestResults(data) {
     // Store test results
     testResults = data;
 
-    // Create results display
-    const output = data.stdout || data.stderr || 'No output';
-    
-    // Update code output with test results
-    codeOutput.textContent = output;
+    // Parse test results from output
+    const parsedResults = parseTestResults(data.stdout);
+
+    // Update test summary card
+    displayTestSummary(parsedResults, data.executionTime);
+
+    // Display individual test results
+    displayTestResultsList(parsedResults.tests);
+
+    // Display environment info
+    displayEnvironmentInfo();
+
+    // Update code header label
+    codeHeaderLabel.textContent = 'Test Results';
+
+    // Display parsed results in code block
+    displayCodeWithHighlighting(data.stdout, false);
+
+    // Store console output
+    consoleOutputText.textContent = data.stdout;
+    consoleOutputSection.style.display = 'block';
+    consoleOutput.style.display = 'none';
+    toggleConsoleBtn.classList.remove('expanded');
 
     // Show View Code button, hide Run Tests button temporarily
     viewCodeBtn.style.display = 'inline-flex';
     
     // Scroll to results
     setTimeout(() => {
-        codeOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        testSummaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 
@@ -504,7 +564,16 @@ function viewGeneratedCode() {
     }
 
     // Restore generated code
-    codeOutput.textContent = generatedTestCode;
+    displayCodeWithHighlighting(generatedTestCode);
+    
+    // Update code header label
+    codeHeaderLabel.textContent = 'Generated Test Code';
+    
+    // Hide test results components
+    testSummaryCard.style.display = 'none';
+    testResultsList.style.display = 'none';
+    environmentInfo.style.display = 'none';
+    consoleOutputSection.style.display = 'none';
     
     // Hide View Code button
     viewCodeBtn.style.display = 'none';
@@ -531,6 +600,160 @@ function showStatus(message, type = 'info') {
  */
 function hideStatus() {
     statusMessage.style.display = 'none';
+}
+
+/**
+ * Display code with syntax highlighting and line numbers
+ */
+function displayCodeWithHighlighting(code, addLineNumbers = true) {
+    // Basic syntax highlighting for Python
+    const highlighted = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/(import|from|def|class|if|else|elif|for|while|return|assert|try|except|finally|with|as|in|is|not|and|or|True|False|None)/g, '<span class="keyword">$1</span>')
+        .replace(/(".*?"|'.*?')/g, '<span class="string">$1</span>')
+        .replace(/(#.*$)/gm, '<span class="comment">$1</span>')
+        .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+    
+    codeOutput.innerHTML = highlighted;
+    
+    // Add line numbers
+    if (addLineNumbers) {
+        const lines = code.split('\n');
+        lineNumbers.innerHTML = lines.map((_, i) => i + 1).join('\n');
+        lineNumbers.style.display = 'block';
+    } else {
+        lineNumbers.style.display = 'none';
+    }
+}
+
+/**
+ * Parse test results from pytest output
+ */
+function parseTestResults(output) {
+    const results = {
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        total: 0,
+        tests: []
+    };
+    
+    // Extract test results
+    const testLines = output.split('\n');
+    testLines.forEach(line => {
+        // Match test result lines like: "test_file.py::test_name PASSED"
+        const match = line.match(/(.+?)::(test_\w+)\s+(PASSED|FAILED|SKIPPED)/);
+        if (match) {
+            const [, , testName, status] = match;
+            results.tests.push({
+                name: testName,
+                status: status.toLowerCase()
+            });
+            
+            if (status === 'PASSED') results.passed++;
+            else if (status === 'FAILED') results.failed++;
+            else if (status === 'SKIPPED') results.skipped++;
+        }
+    });
+    
+    results.total = results.passed + results.failed + results.skipped;
+    
+    // If no tests found, try to extract from summary
+    if (results.total === 0) {
+        const summaryMatch = output.match(/(\d+) passed/);
+        if (summaryMatch) {
+            results.passed = parseInt(summaryMatch[1]);
+            results.total = results.passed;
+        }
+    }
+    
+    return results;
+}
+
+/**
+ * Display test summary card
+ */
+function displayTestSummary(results, executionTime) {
+    document.getElementById('testsPassed').textContent = results.passed;
+    document.getElementById('testsFailed').textContent = results.failed;
+    document.getElementById('totalTests').textContent = results.total;
+    document.getElementById('endpointsTested').textContent = endpointCount.textContent || '0';
+    document.getElementById('executionTime').textContent = executionTime ? `${executionTime}s` : '';
+    
+    testSummaryCard.style.display = 'block';
+}
+
+/**
+ * Display test results list
+ */
+function displayTestResultsList(tests) {
+    if (!tests || tests.length === 0) {
+        testResultsList.style.display = 'none';
+        return;
+    }
+    
+    testResultsItems.innerHTML = '';
+    
+    tests.forEach(test => {
+        const item = document.createElement('div');
+        item.className = `test-result-item ${test.status}`;
+        
+        const icon = document.createElement('div');
+        icon.className = `test-result-icon ${test.status}`;
+        
+        if (test.status === 'passed') {
+            icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        } else if (test.status === 'failed') {
+            icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        } else {
+            icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+        }
+        
+        const name = document.createElement('div');
+        name.className = 'test-result-name';
+        name.textContent = test.name;
+        
+        const status = document.createElement('div');
+        status.className = `test-result-status ${test.status}`;
+        status.textContent = test.status.toUpperCase();
+        
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(status);
+        
+        testResultsItems.appendChild(item);
+    });
+    
+    testResultsList.style.display = 'block';
+}
+
+/**
+ * Display environment info
+ */
+function displayEnvironmentInfo() {
+    // These values could be fetched from backend in the future
+    document.getElementById('pythonVersion').textContent = '3.11';
+    document.getElementById('pytestVersion').textContent = '7.4.3';
+    document.getElementById('platform').textContent = 'Linux';
+    
+    environmentInfo.style.display = 'block';
+}
+
+/**
+ * Toggle console output visibility
+ */
+function toggleConsoleOutput() {
+    if (consoleOutput.style.display === 'none') {
+        consoleOutput.style.display = 'block';
+        toggleConsoleBtn.classList.add('expanded');
+        toggleConsoleBtn.querySelector('span').textContent = 'Hide Console Output';
+    } else {
+        consoleOutput.style.display = 'none';
+        toggleConsoleBtn.classList.remove('expanded');
+        toggleConsoleBtn.querySelector('span').textContent = 'View Console Output';
+    }
 }
 
 /**

@@ -1,0 +1,29 @@
+openapi: 3.0.0
+info:
+  title: HTTPBin Testing API
+  version: "1.0.0"
+
+servers:
+  - url: https://httpbin.org
+
+paths:
+  /get:
+    get:
+      summary: Simple GET request
+      responses:
+        "200":
+          description: Success
+
+  /ip:
+    get:
+      summary: Get client IP
+      responses:
+        "200":
+          description: Success
+
+  /headers:
+    get:
+      summary: Get request headers
+      responses:
+        "200":
+          description: Success
