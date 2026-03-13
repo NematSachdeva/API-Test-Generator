@@ -4,6 +4,8 @@ from werkzeug.utils import secure_filename
 import json
 import yaml
 import os
+import subprocess
+import tempfile
 from parser import SwaggerParser
 from test_generator import APITestGenerator
 
@@ -14,7 +16,7 @@ CORS(app, resources={
     r"/*": {
         "origins": ["*"],
         "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type", "Accept"]
     }
 })
 
@@ -101,12 +103,22 @@ def root():
                     'body': 'OpenAPI/Swagger specification as JSON (optional)'
                 },
                 'response': 'JSON with extracted endpoints and count'
+            },
+            'POST /run-tests': {
+                'description': 'Execute pytest on generated test code and return results',
+                'method': 'POST',
+                'accepts': ['application/json'],
+                'parameters': {
+                    'test_code': 'String containing pytest test code to execute'
+                },
+                'response': 'JSON with stdout, stderr, returncode, passed status, and summary'
             }
         },
         'features': [
             'Parse OpenAPI 3.0 and Swagger 2.0 specifications',
             'Extract all endpoints and HTTP methods',
             'Generate production-ready pytest test code',
+            'Execute pytest tests and return results',
             'Support for JSON and YAML formats',
             'Comprehensive error handling',
             'Health checks and monitoring'
@@ -115,6 +127,7 @@ def root():
             'generate_tests_from_file': 'curl -X POST -F "file=@swagger.json" http://localhost:8080/generate-tests',
             'generate_tests_from_json': 'curl -X POST -H "Content-Type: application/json" -d @swagger.json http://localhost:8080/generate-tests',
             'parse_endpoints': 'curl -X POST -H "Content-Type: application/json" -d @swagger.json http://localhost:8080/parse',
+            'run_tests': 'curl -X POST -H "Content-Type: application/json" -d \'{"test_code":"import pytest\\ndef test_example():\\n    assert True"}\' http://localhost:8080/run-tests',
             'health_check': 'curl http://localhost:8080/health'
         }
     }), 200
@@ -220,6 +233,100 @@ def parse_spec():
             'endpoints': endpoints,
             'count': len(endpoints)
         }), 200
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/run-tests', methods=['POST'])
+def run_tests():
+    """Execute pytest on generated test code and return results
+    
+    Accepts JSON body with:
+    - test_code: string containing pytest test code
+    
+    Returns:
+    - stdout: pytest output
+    - stderr: error output
+    - returncode: exit code (0 = success, non-zero = failure)
+    - passed: boolean indicating if all tests passed
+    - summary: human-readable summary
+    """
+    try:
+        # Validate request
+        if not request.is_json:
+            return jsonify({'error': 'Content-Type must be application/json'}), 400
+        
+        data = request.get_json()
+        test_code = data.get('test_code')
+        
+        if not test_code:
+            return jsonify({'error': 'test_code is required'}), 400
+        
+        if not isinstance(test_code, str):
+            return jsonify({'error': 'test_code must be a string'}), 400
+        
+        # Create temporary file for test code
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            temp_file.write(test_code)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Run pytest on the temporary file
+            # Use -v for verbose output, --tb=short for shorter tracebacks
+            result = subprocess.run(
+                ['pytest', temp_file_path, '-v', '--tb=short', '--color=no'],
+                capture_output=True,
+                text=True,
+                timeout=30  # 30 second timeout for safety
+            )
+            
+            stdout = result.stdout
+            stderr = result.stderr
+            returncode = result.returncode
+            
+            # Determine if tests passed
+            passed = returncode == 0
+            
+            # Create summary
+            if passed:
+                # Extract passed count from output
+                import re
+                match = re.search(r'(\d+) passed', stdout)
+                count = match.group(1) if match else 'All'
+                summary = f'✅ {count} tests passed successfully!'
+            else:
+                # Extract failed/error count
+                import re
+                failed_match = re.search(r'(\d+) failed', stdout)
+                error_match = re.search(r'(\d+) error', stdout)
+                
+                failed_count = failed_match.group(1) if failed_match else '0'
+                error_count = error_match.group(1) if error_match else '0'
+                
+                if error_count != '0':
+                    summary = f'❌ {error_count} errors occurred during test execution'
+                else:
+                    summary = f'❌ {failed_count} tests failed'
+            
+            return jsonify({
+                'status': 'success',
+                'stdout': stdout,
+                'stderr': stderr,
+                'returncode': returncode,
+                'passed': passed,
+                'summary': summary
+            }), 200
+        
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+    
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'error': 'Test execution timed out (30 seconds)',
+            'status': 'timeout'
+        }), 408
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500

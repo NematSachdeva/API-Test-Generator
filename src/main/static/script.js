@@ -22,12 +22,14 @@ const endpointCount = document.getElementById('endpointCount');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const runTestsBtn = document.getElementById('runTestsBtn');
+const viewCodeBtn = document.getElementById('viewCodeBtn');
 const endpointsTable = document.getElementById('endpointsTable');
 const endpointsTableBody = document.getElementById('endpointsTableBody');
 
 // State
 let selectedFile = null;
 let generatedTestCode = null;
+let testResults = null;
 
 /**
  * Initialize event listeners
@@ -56,6 +58,9 @@ function initializeEventListeners() {
 
     // Run Tests button
     runTestsBtn.addEventListener('click', runTests);
+
+    // View Code button
+    viewCodeBtn.addEventListener('click', viewGeneratedCode);
 }
 
 /**
@@ -130,6 +135,8 @@ function clearFile() {
     uploadArea.style.display = 'block';
     generateBtn.disabled = true;
     resultsSection.style.display = 'none';
+    viewCodeBtn.style.display = 'none';
+    testResults = null;
     hideStatus();
 }
 
@@ -394,19 +401,115 @@ function downloadTests() {
 }
 
 /**
- * Run tests (placeholder functionality)
+ * Run tests - Execute pytest on generated test code
  */
-function runTests() {
+async function runTests() {
     if (!generatedTestCode) {
         showStatus('No tests to run', 'error');
         return;
     }
 
-    // Show placeholder message
-    showStatus('🚀 Running tests feature coming soon! For now, download the tests and run them locally with: pytest generated_tests.py', 'info');
+    try {
+        // Show loading state
+        runTestsBtn.disabled = true;
+        showStatus('🚀 Running tests...', 'info');
+
+        // Send request to backend
+        const response = await fetch(`${API_BASE}/run-tests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                test_code: generatedTestCode
+            })
+        });
+
+        // Handle response
+        if (!response.ok) {
+            let errorMessage = 'Failed to run tests';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                errorMessage = `Server error: ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+
+        // Display results
+        displayTestResults(data);
+
+        // Show appropriate status message
+        if (data.passed) {
+            showStatus(data.summary || '✅ All tests passed!', 'success');
+        } else {
+            showStatus(data.summary || '❌ Some tests failed', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error running tests:', error);
+        
+        let userMessage = error.message;
+        if (error.message.includes('Failed to fetch')) {
+            userMessage = 'Cannot connect to backend. Please check your internet connection.';
+        } else if (error.message.includes('timeout')) {
+            userMessage = 'Test execution timed out. Tests may be taking too long to run.';
+        }
+        
+        showStatus(`Error: ${userMessage}`, 'error');
+    } finally {
+        // Re-enable button
+        runTestsBtn.disabled = false;
+    }
+}
+
+/**
+ * Display test execution results
+ */
+function displayTestResults(data) {
+    if (!data.stdout && !data.stderr) {
+        showStatus('No test output received', 'error');
+        return;
+    }
+
+    // Store test results
+    testResults = data;
+
+    // Create results display
+    const output = data.stdout || data.stderr || 'No output';
     
-    // Future implementation will call backend endpoint to execute tests
-    // Example: POST /run-tests with test code
+    // Update code output with test results
+    codeOutput.textContent = output;
+
+    // Show View Code button, hide Run Tests button temporarily
+    viewCodeBtn.style.display = 'inline-flex';
+    
+    // Scroll to results
+    setTimeout(() => {
+        codeOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+/**
+ * View generated code (switch back from test results)
+ */
+function viewGeneratedCode() {
+    if (!generatedTestCode) {
+        showStatus('No generated code available', 'error');
+        return;
+    }
+
+    // Restore generated code
+    codeOutput.textContent = generatedTestCode;
+    
+    // Hide View Code button
+    viewCodeBtn.style.display = 'none';
+    
+    showStatus('Viewing generated test code', 'info');
 }
 
 /**
