@@ -603,20 +603,11 @@ function hideStatus() {
 }
 
 /**
- * Display code with syntax highlighting and line numbers
+ * Display code with line numbers (no syntax highlighting to avoid HTML corruption)
  */
 function displayCodeWithHighlighting(code, addLineNumbers = true) {
-    // Basic syntax highlighting for Python
-    const highlighted = code
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/(import|from|def|class|if|else|elif|for|while|return|assert|try|except|finally|with|as|in|is|not|and|or|True|False|None)/g, '<span class="keyword">$1</span>')
-        .replace(/(".*?"|'.*?')/g, '<span class="string">$1</span>')
-        .replace(/(#.*$)/gm, '<span class="comment">$1</span>')
-        .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
-    
-    codeOutput.innerHTML = highlighted;
+    // Use textContent to prevent HTML parsing issues
+    codeOutput.textContent = code;
     
     // Add line numbers
     if (addLineNumbers) {

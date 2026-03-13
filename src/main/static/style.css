@@ -642,12 +642,11 @@ body {
     font-size: 0.9em;
     line-height: 1.6;
     padding: 25px;
-    overflow-x: auto;
     margin: 0;
     max-height: 600px;
     overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    white-space: pre;
+    overflow-x: auto;
     background: rgba(10, 10, 10, 0.5);
 }
 
@@ -1120,6 +1119,7 @@ body {
 .code-wrapper {
     display: flex;
     position: relative;
+    overflow-x: auto;
 }
 
 .line-numbers {
@@ -1133,36 +1133,23 @@ body {
     user-select: none;
     border-right: 1px solid rgba(74, 158, 255, 0.1);
     min-width: 50px;
+    flex-shrink: 0;
 }
 
 .code-block {
     flex: 1;
+    min-width: 0;
+    overflow-x: auto;
 }
 
-/* Syntax Highlighting */
-.code-block .keyword {
-    color: #c678dd;
-}
-
-.code-block .string {
-    color: #98c379;
-}
-
-.code-block .comment {
-    color: #5c6370;
-    font-style: italic;
-}
-
-.code-block .function {
-    color: #61afef;
-}
-
-.code-block .number {
-    color: #d19a66;
-}
-
+/* Remove syntax highlighting styles since we're using plain text */
+.code-block .keyword,
+.code-block .string,
+.code-block .comment,
+.code-block .function,
+.code-block .number,
 .code-block .operator {
-    color: #56b6c2;
+    /* Removed - using plain text display */
 }
 
 /* Console Output Section */
