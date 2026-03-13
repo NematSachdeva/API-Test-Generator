@@ -1137,19 +1137,19 @@ body {
 }
 
 .code-block {
+    color: #d4d4d4;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+    padding: 25px;
+    margin: 0;
+    max-height: 600px;
+    overflow-y: auto;
+    white-space: pre;
+    overflow-x: auto;
+    background: rgba(10, 10, 10, 0.5);
     flex: 1;
     min-width: 0;
-    overflow-x: auto;
-}
-
-/* Remove syntax highlighting styles since we're using plain text */
-.code-block .keyword,
-.code-block .string,
-.code-block .comment,
-.code-block .function,
-.code-block .number,
-.code-block .operator {
-    /* Removed - using plain text display */
 }
 
 /* Console Output Section */
