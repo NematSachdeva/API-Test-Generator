@@ -21,9 +21,13 @@ const codeOutput = document.getElementById('codeOutput');
 const endpointCount = document.getElementById('endpointCount');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const runTestsBtn = document.getElementById('runTestsBtn');
+const endpointsTable = document.getElementById('endpointsTable');
+const endpointsTableBody = document.getElementById('endpointsTableBody');
 
 // State
 let selectedFile = null;
+let generatedTestCode = null;
 
 /**
  * Initialize event listeners
@@ -49,6 +53,9 @@ function initializeEventListeners() {
 
     // Download button
     downloadBtn.addEventListener('click', downloadTests);
+
+    // Run Tests button
+    runTestsBtn.addEventListener('click', runTests);
 }
 
 /**
@@ -136,14 +143,20 @@ async function generateTests() {
     }
 
     try {
-        // Show loading state
+        // Show loading state with visual messages
         generateBtn.disabled = true;
         spinner.style.display = 'inline-flex';
-        showStatus('Generating tests...', 'info');
+        
+        // Step 1: Uploading
+        showStatus('📤 Uploading file...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Create FormData
         const formData = new FormData();
         formData.append('file', selectedFile);
+
+        // Step 2: Parsing API
+        showStatus('🔍 Parsing API specification...', 'info');
 
         // Send request to Railway backend
         const response = await fetch(`${API_BASE}/generate-tests`, {
@@ -174,9 +187,13 @@ async function generateTests() {
             throw new Error('No test code generated. Please check your Swagger/OpenAPI file.');
         }
 
+        // Step 3: Generating tests
+        showStatus('⚡ Generating pytest tests...', 'info');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Display results
         displayResults(data);
-        showStatus('Tests generated successfully!', 'success');
+        showStatus('✅ Tests generated successfully!', 'success');
 
     } catch (error) {
         console.error('Error:', error);
@@ -206,11 +223,18 @@ function displayResults(data) {
         return;
     }
 
+    // Store generated code
+    generatedTestCode = data.test_code;
+
     // Update code output
     codeOutput.textContent = data.test_code;
 
     // Update endpoint count
-    endpointCount.textContent = data.endpoints_count || 0;
+    const count = data.endpoints_count || 0;
+    endpointCount.textContent = count;
+
+    // Try to extract and display endpoints table
+    displayEndpointsTable(data.test_code, count);
 
     // Show results section
     resultsSection.style.display = 'block';
@@ -219,6 +243,91 @@ function displayResults(data) {
     setTimeout(() => {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+}
+
+/**
+ * Extract and display endpoints from test code
+ */
+function displayEndpointsTable(testCode, endpointCount) {
+    if (!testCode || endpointCount === 0) {
+        endpointsTable.style.display = 'none';
+        return;
+    }
+
+    // Try to extract endpoints from test code
+    const endpoints = extractEndpoints(testCode);
+    
+    if (endpoints.length === 0) {
+        endpointsTable.style.display = 'none';
+        return;
+    }
+
+    // Clear existing table
+    endpointsTableBody.innerHTML = '';
+
+    // Populate table
+    endpoints.forEach(endpoint => {
+        const row = document.createElement('tr');
+        
+        const methodCell = document.createElement('td');
+        methodCell.textContent = endpoint.method;
+        methodCell.style.fontWeight = '600';
+        methodCell.style.color = getMethodColor(endpoint.method);
+        
+        const pathCell = document.createElement('td');
+        pathCell.textContent = endpoint.path;
+        pathCell.style.fontFamily = 'monospace';
+        
+        row.appendChild(methodCell);
+        row.appendChild(pathCell);
+        endpointsTableBody.appendChild(row);
+    });
+
+    // Show table
+    endpointsTable.style.display = 'block';
+}
+
+/**
+ * Extract endpoints from test code using regex
+ */
+function extractEndpoints(testCode) {
+    const endpoints = [];
+    
+    // Match patterns like: requests.get("http://localhost:8080/users")
+    // or: requests.post(f"{BASE_URL}/users")
+    const patterns = [
+        /requests\.(get|post|put|delete|patch)\s*\(\s*[f]?["'].*?(\/[^"']*?)["']/gi,
+        /method\s*=\s*["'](GET|POST|PUT|DELETE|PATCH)["'].*?url\s*=\s*[f]?["'].*?(\/[^"']*?)["']/gi
+    ];
+
+    patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(testCode)) !== null) {
+            const method = match[1].toUpperCase();
+            const path = match[2];
+            
+            // Avoid duplicates
+            if (!endpoints.some(e => e.method === method && e.path === path)) {
+                endpoints.push({ method, path });
+            }
+        }
+    });
+
+    return endpoints;
+}
+
+/**
+ * Get color for HTTP method
+ */
+function getMethodColor(method) {
+    const colors = {
+        'GET': '#4a9eff',
+        'POST': '#4caf50',
+        'PUT': '#ff9800',
+        'DELETE': '#f44336',
+        'PATCH': '#9c27b0'
+    };
+    return colors[method.toUpperCase()] || '#a0a0a0';
 }
 
 /**
@@ -236,13 +345,13 @@ async function copyToClipboard() {
         
         // Show feedback
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>Copied!';
+        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>Copied!';
         
         setTimeout(() => {
             copyBtn.innerHTML = originalText;
         }, 2000);
 
-        showStatus('Code copied to clipboard!', 'success');
+        showStatus('📋 Code copied to clipboard!', 'success');
     } catch (error) {
         console.error('Error copying to clipboard:', error);
         showStatus('Failed to copy to clipboard', 'error');
@@ -277,11 +386,27 @@ function downloadTests() {
         // Cleanup
         window.URL.revokeObjectURL(url);
         
-        showStatus('Tests downloaded successfully!', 'success');
+        showStatus('📥 Tests downloaded successfully!', 'success');
     } catch (error) {
         console.error('Error downloading file:', error);
         showStatus('Failed to download file', 'error');
     }
+}
+
+/**
+ * Run tests (placeholder functionality)
+ */
+function runTests() {
+    if (!generatedTestCode) {
+        showStatus('No tests to run', 'error');
+        return;
+    }
+
+    // Show placeholder message
+    showStatus('🚀 Running tests feature coming soon! For now, download the tests and run them locally with: pytest generated_tests.py', 'info');
+    
+    // Future implementation will call backend endpoint to execute tests
+    // Example: POST /run-tests with test code
 }
 
 /**

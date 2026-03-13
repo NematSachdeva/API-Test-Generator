@@ -7,43 +7,83 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>API Test Generator</title>
-    <link rel="stylesheet" href="./style.css?v=5.0">
+    <link rel="stylesheet" href="./style.css?v=7.0">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app">
-        <!-- Header -->
+        <!-- Header/Navigation -->
         <header class="header">
-            <div class="header-inner">
-                <h1 class="logo">API Test Generator</h1>
-                <p class="tagline">Generate pytest tests from OpenAPI/Swagger specs</p>
+            <div class="header-content">
+                <div class="logo-section">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    </svg>
+                    <h1 class="logo-text">API Test Generator</h1>
+                </div>
+                <p class="tagline">Generate pytest tests from OpenAPI/Swagger specifications</p>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="main">
-            <div class="content-wrapper">
-                <!-- Upload Section -->
-                <section class="upload-section">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-content">
+                    <div class="hero-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                            <path d="M12 12l-3-3m3 3l3-3m-3 3v6"></path>
+                        </svg>
+                    </div>
+                    <h2 class="hero-title">Automate Your API Testing</h2>
+                    <p class="hero-subtitle">Upload your OpenAPI or Swagger specification and instantly generate production-ready pytest test cases</p>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="section-header">
+                    <h3>Upload Your Specification</h3>
+                    <p>Drag and drop or click to select your Swagger/OpenAPI file</p>
+                </div>
+
+                <div class="upload-container">
                     <div class="upload-area" id="uploadArea">
-                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
                         <p class="upload-text">Drag and drop your file here</p>
                         <p class="upload-hint">or click to browse</p>
-                        <p class="upload-formats">JSON, YAML (.json, .yaml, .yml)</p>
+                        <p class="upload-formats">Supported: JSON, YAML (.json, .yaml, .yml)</p>
                         <input type="file" id="fileInput" accept=".json,.yaml,.yml" hidden>
                     </div>
 
                     <div id="fileInfo" class="file-info" style="display: none;">
                         <div class="file-info-content">
-                            <span class="file-name" id="fileName"></span>
-                            <button type="button" id="clearFileBtn" class="btn-clear">✕</button>
+                            <svg class="file-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                <polyline points="13 2 13 9 20 9"></polyline>
+                            </svg>
+                            <div class="file-details">
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-status">Ready to generate</span>
+                            </div>
+                            <button type="button" id="clearFileBtn" class="btn-clear" title="Clear file">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
                     <button id="generateBtn" class="btn-generate" disabled>
+                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20m10-10H2"></path>
+                        </svg>
                         <span class="btn-text">Generate Tests</span>
                         <span class="btn-spinner" id="spinner" style="display: none;">
                             <svg class="spinner" viewBox="0 0 50 50">
@@ -51,50 +91,150 @@
                             </svg>
                         </span>
                     </button>
-                </section>
+                </div>
 
                 <!-- Status Messages -->
                 <div id="statusMessage" class="status-message" style="display: none;"></div>
+            </section>
 
-                <!-- Results Section -->
-                <section id="resultsSection" class="results-section" style="display: none;">
-                    <div class="results-header">
-                        <div class="results-title">
-                            <h2>Generated Tests</h2>
-                            <span class="endpoint-badge" id="endpointCount">0</span>
+            <!-- How It Works Section -->
+            <section class="how-it-works">
+                <div class="section-header">
+                    <h3>How It Works</h3>
+                    <p>Three simple steps to generate your API tests</p>
+                </div>
+
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
                         </div>
-                        <div class="results-actions">
+                        <h4>Upload File</h4>
+                        <p>Upload your Swagger or OpenAPI specification file</p>
+                    </div>
+
+                    <div class="step-arrow">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                            </svg>
+                        </div>
+                        <h4>Parse API</h4>
+                        <p>Extract all endpoints and HTTP methods automatically</p>
+                    </div>
+
+                    <div class="step-arrow">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 18 2 12 8 6"></polyline>
+                            </svg>
+                        </div>
+                        <h4>Generate Tests</h4>
+                        <p>Get production-ready pytest test code instantly</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+                <div class="section-header">
+                    <h3>Generated Tests</h3>
+                    <div class="results-meta">
+                        <span class="endpoint-badge">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <path d="M12 1v6m0 6v6"></path>
+                            </svg>
+                            <span id="endpointCount">0</span> endpoints detected
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Endpoints Table (if available) -->
+                <div id="endpointsTable" class="endpoints-table" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                            </tr>
+                        </thead>
+                        <tbody id="endpointsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Code Block -->
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 18 2 12 8 6"></polyline>
+                            </svg>
+                            pytest
+                        </span>
+                        <div class="code-actions">
                             <button id="copyBtn" class="btn-action" title="Copy to clipboard">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                 </svg>
                                 Copy
                             </button>
                             <button id="downloadBtn" class="btn-action" title="Download as file">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="7 10 12 15 17 10"></polyline>
                                     <line x1="12" y1="15" x2="12" y2="3"></line>
                                 </svg>
                                 Download
                             </button>
+                            <button id="runTestsBtn" class="btn-action" title="Run tests">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Run Tests
+                            </button>
                         </div>
                     </div>
 
-                    <div class="code-container">
-                        <pre><code id="codeOutput" class="code-block"></code></pre>
-                    </div>
-                </section>
-            </div>
+                    <pre><code id="codeOutput" class="code-block"></code></pre>
+                </div>
+            </section>
         </main>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>API Test Generator • <a href="https://api-test-generator-production.up.railway.app/" target="_blank">API Docs</a></p>
+            <p>API Test Generator · DevOps Project</p>
+            <p class="footer-links">
+                <a href="https://api-test-generator-production.up.railway.app/" target="_blank">API Docs</a>
+                <span class="separator">·</span>
+                <a href="https://github.com/NematSachdeva/API-Test-Generator" target="_blank">GitHub</a>
+            </p>
         </footer>
     </div>
 
-    <script src="./script.js?v=5.0"></script>
+    <script src="./script.js?v=7.0"></script>
 </body>
 </html>
