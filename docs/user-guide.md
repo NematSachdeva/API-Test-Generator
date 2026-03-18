@@ -366,11 +366,18 @@ API Test Generator - Sample Test Generation
    ↓
 5. Receive Generated Test Code
    ↓
-6. Run Tests
-   ├─ pytest my_tests.py -v
-   └─ View results
+6. Run Tests (NEW!)
+   ├─ From UI: Click "Run Tests" button
+   ├─ From CLI: pytest generated_tests.py
+   └─ View results in real-time
    ↓
-7. Integrate with CI/CD
+7. View Results
+   ├─ Test summary (passed/failed)
+   ├─ Individual test status
+   ├─ Environment info
+   └─ Console output
+   ↓
+8. Integrate with CI/CD
    ├─ GitHub Actions
    └─ Other platforms
 ```
@@ -431,6 +438,18 @@ The API returns:
 
 #### Step 4: Run Generated Tests
 
+**Option A: From Web UI (NEW!)**
+1. Upload Swagger file
+2. Click "Generate Tests"
+3. Click "Run Tests" button
+4. View results in real-time with:
+   - ✅ Test summary (passed, failed, total)
+   - 📋 Individual test results
+   - 🖥️ Environment info
+   - 📊 Execution time
+   - 🔍 Console output
+
+**Option B: From Command Line**
 ```bash
 pytest generated_tests.py -v -s
 ```
@@ -454,7 +473,20 @@ Response Body: {...}
 ✓ Test passed for POST /users
 ```
 
-#### Step 5: Customize Tests (Optional)
+#### Step 5: View Test Results
+
+**From UI:**
+- Test Summary Card: Shows passed, failed, total tests
+- Test Results List: Individual test status with icons
+- Environment Info: Python, pytest, platform versions
+- Console Output: Full pytest output (collapsible)
+
+**From CLI:**
+```bash
+pytest generated_tests.py -v --tb=short
+```
+
+#### Step 6: Customize Tests (Optional)
 
 Edit generated tests to add:
 - Authentication headers
@@ -462,7 +494,7 @@ Edit generated tests to add:
 - Query parameters
 - Custom assertions
 
-#### Step 6: Integrate with CI/CD
+#### Step 7: Integrate with CI/CD
 
 Add to your GitHub Actions workflow:
 ```yaml

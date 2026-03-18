@@ -41,13 +41,15 @@ Automated validation & reporting
 - 🔍 **Parse OpenAPI 3.0 and Swagger 2.0 specifications**
 - 🎯 **Extract API endpoints automatically** with methods, parameters, and responses
 - 🧪 **Generate production-ready pytest test cases** with status code validation
+- ▶️ **Run Tests Directly from UI** - Execute pytest dynamically and view results in real-time
+- 📋 **Copy & Download Generated Tests** - Easy code sharing and file management
 - 🌐 **Web UI for uploading Swagger files** with drag-and-drop support
 - 🐳 **Docker containerized application** for consistent deployment
 - 🔄 **CI/CD pipeline using GitHub Actions** with 5-stage automation
 - 📊 **Monitoring configuration** using Prometheus, Nagios, and Grafana
 - ☸️ **Kubernetes deployment manifests** for production orchestration
 - 📝 **REST API endpoints** for programmatic test generation
-- 🎨 **Modern dark-themed UI** with responsive design
+- 🎨 **Modern dark-themed UI** with responsive design and test result visualization
 
 ---
 
@@ -303,6 +305,100 @@ docker-compose -f infrastructure/docker/docker-compose.yml logs -f
 
 # Stop services
 docker-compose -f infrastructure/docker/docker-compose.yml down
+```
+
+---
+
+## 🧪 Running Generated Tests
+
+### From the Web UI
+
+The API Test Generator now includes a **Run Tests** feature directly in the web interface:
+
+1. **Generate Tests**
+   - Upload your Swagger/OpenAPI file
+   - Click "Generate Tests"
+   - Tests appear in the code viewer
+
+2. **Run Tests from UI**
+   - Click the **"Run Tests"** button
+   - Backend executes pytest dynamically
+   - Results display in real-time with:
+     - ✅ Test summary card (passed, failed, total)
+     - 📋 Individual test results with status
+     - 🖥️ Environment info (Python, pytest versions)
+     - 📊 Execution time
+     - 🔍 Console output (collapsible)
+
+3. **View Results**
+   - Green checkmarks for passed tests
+   - Red X marks for failed tests
+   - Click "View Code" to see generated test code again
+   - Click "View Console Output" for detailed pytest output
+
+### From Command Line
+
+#### Install pytest and requests
+
+```bash
+pip install pytest requests
+```
+
+#### Run Tests
+
+```bash
+# Run all tests
+pytest generated_tests.py
+
+# Run with verbose output
+pytest generated_tests.py -v
+
+# Run with detailed output
+pytest generated_tests.py -vv
+
+# Run with coverage
+pytest generated_tests.py --cov=. --cov-report=html
+```
+
+#### Example Output
+
+```
+generated_tests.py::test_get_users_1 PASSED                    [ 33%]
+generated_tests.py::test_post_users_2 PASSED                   [ 66%]
+generated_tests.py::test_get_users_id_3 PASSED                 [100%]
+
+========================= 3 passed in 0.45s =========================
+```
+
+### What the Tests Validate
+
+The generated tests automatically:
+- ✅ Send HTTP requests to each endpoint
+- ✅ Validate response status codes (200, 201, 404, etc.)
+- ✅ Print endpoint names for debugging
+- ✅ Use the requests library for HTTP calls
+- ✅ Follow pytest conventions and best practices
+
+### Backend Run Tests API
+
+The backend provides a `/run-tests` endpoint for programmatic test execution:
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"test_code": "import pytest\n..."}' \
+  http://localhost:8080/run-tests
+```
+
+**Response:**
+```json
+{
+  "stdout": "===== test session starts =====\n...",
+  "stderr": "",
+  "returncode": 0,
+  "passed": true,
+  "summary": "3 passed in 0.45s"
+}
 ```
 
 ---

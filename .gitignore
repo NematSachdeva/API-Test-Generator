@@ -76,3 +76,11 @@ Thumbs.db
 # Application specific
 generated_tests.py
 uploads/
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+deliverables/*.mp4
+presentations/*.mp4
